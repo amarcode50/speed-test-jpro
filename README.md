@@ -1,177 +1,88 @@
-# Speed Test Application
+# High-Performance Speed Test Backend Server
 
-This application provides a comprehensive internet speed testing solution with a React frontend and a custom Node.js backend for accurate speed measurements.
+This backend server is optimized to handle millions of concurrent requests for speed testing applications. It uses clustering, streaming optimizations, and efficient memory management to provide reliable performance metrics even under extreme load.
 
 ## Features
 
-- Download speed testing
-- Upload speed testing
-- Ping and latency measurement
-- Packet loss detection
-- Bufferbloat analysis
-- Modern, responsive UI
-- Docker-based deployment for easy setup
-- Environment-specific configuration
-- Production-ready logging
+- **Cluster Mode**: Automatically utilizes all available CPU cores for maximum throughput
+- **Memory Optimization**: Uses shared buffer pools to minimize memory usage
+- **Streaming Processing**: Efficiently handles large uploads and downloads without buffering entire payloads
+- **Performance Metrics**: Detailed statistics for monitoring server performance
+- **Rate Limiting**: Configurable rate limiting to prevent abuse (disabled for speed test endpoints)
+- **Compression**: Automatic response compression for reduced bandwidth usage
+- **Security Headers**: Implements best practices for web security
 
-## Project Structure
+## Endpoints
 
-- `/project` - React frontend application
-- `/backend` - Node.js Express backend server
+### Ping Testing
 
-## Setup Instructions
+- `GET /ping`: Standard ping endpoint with detailed timing information
+- `HEAD /ping`: Minimal ping endpoint for latency testing
+- `GET /fastping`: Ultra-lightweight ping endpoint for accurate latency measurement
 
-### Prerequisites
+### Speed Testing
 
-- Node.js (v14 or higher)
-- npm or yarn
+- `GET /download`: Generates random data for download speed testing
+  - Query parameter: `bytes` - Size in bytes to download (default: 1MB, max: 500MB)
+- `POST /upload`: Accepts data uploads for upload speed testing
+  - Supports raw binary data with `Content-Type: application/octet-stream`
 
-### Backend Setup
+### Monitoring
 
-1. Navigate to the backend directory:
-   ```
-   cd backend
-   ```
+- `GET /status`: Detailed server status including system metrics, request counts, and performance data
+- `GET /health`: Lightweight health check endpoint
 
-2. Install dependencies:
-   ```
-   npm install
-   ```
+## Performance Capabilities
 
-3. Start the backend server:
-   ```
-   npm start
-   ```
+- **Concurrent Connections**: Can handle millions of concurrent connections (limited by system resources)
+- **Throughput**: Optimized for multi-gigabit throughput
+- **CPU Utilization**: Efficiently distributes load across all available CPU cores
+- **Memory Usage**: Minimizes memory usage through buffer reuse and streaming processing
 
-   The server will run on port 3000 by default. You should see a message: `Speed test backend server running on port 3000`
+## Installation
 
-### Frontend Setup
+```bash
+npm install
+```
 
-1. Navigate to the frontend directory:
-   ```
-   cd project
-   ```
+## Running the Server
 
-2. Install dependencies:
-   ```
-   npm install
-   ```
+### Production Mode
 
-3. Start the development server:
-   ```
-   npm run dev
-   ```
+```bash
+npm start
+```
 
-   The frontend will typically run on port 5173 or another available port.
+This will automatically start the server in cluster mode, utilizing all available CPU cores.
 
-## Using the Application
+### Development Mode
 
-1. Open your browser and navigate to the frontend URL (e.g., http://localhost:5173)
-2. The speed test will start automatically or click the "Start Test" button
-3. View your results for download speed, upload speed, ping, and other metrics
+```bash
+npm run dev
+```
 
-## Backend API Endpoints
-
-- `GET /ping` - Used for ping/latency testing
-- `GET /download` - Serves random data for download speed testing
-  - Query parameter: `bytes` - Size of data to download (default: 1MB)
-- `POST /upload` - Accepts data uploads for upload speed testing
-- `GET /status` - Returns server status information
+This uses nodemon for automatic reloading during development.
 
 ## Configuration
 
-The frontend is configured to connect to the backend using the settings in `project/src/config/serverConfig.ts`. If you need to change the backend URL or port, update this file.
+The server is configured for optimal performance out of the box, but you can modify the following settings in `server.js`:
 
-## Troubleshooting
+- **Rate Limiting**: Adjust the `apiLimiter` settings to change request limits
+- **Timeouts**: Modify `app.timeout` to change the default socket timeout
+- **Chunk Sizes**: Adjust the chunk sizes in the download endpoint for different performance characteristics
 
-- If you encounter CORS issues, ensure both frontend and backend are running
-- Check browser console for any error messages
-- Verify that the backend server is running and accessible
-- For production issues, check the logs in `backend/logs/access.log`
+## Monitoring
 
-## Performance Considerations
+The server logs performance metrics periodically:
 
-- The backend generates random data on-the-fly to avoid caching issues
-- Multiple parallel connections are used to saturate bandwidth
-- Cache prevention headers are set on all responses
-- Cluster mode is enabled by default to utilize all CPU cores
+- Master process logs overall statistics every minute
+- Worker processes log their individual statistics every 5 minutes
+- Download and upload completions are logged with throughput information
 
-## Deployment
+Use the `/status` endpoint to get real-time performance metrics.
 
-### Docker Deployment (Recommended)
+## System Requirements
 
-The easiest way to deploy the application is using Docker:
-
-1. Make sure Docker and Docker Compose are installed on your system
-
-2. Run the deployment script:
-   - On Linux/Mac: `./deploy.sh`
-   - On Windows: `deploy.bat`
-
-3. The application will be available at:
-   - Frontend: http://localhost:5000
-   - Backend API: http://localhost:3000
-
-### Manual Deployment
-
-#### Backend
-
-1. Navigate to the backend directory:
-   ```
-   cd backend
-   ```
-
-2. Install production dependencies:
-   ```
-   npm ci --only=production
-   ```
-
-3. Create a `.env` file based on `.env.production`
-
-4. Start the server:
-   ```
-   NODE_ENV=production node server.js
-   ```
-
-#### Frontend
-
-1. Navigate to the frontend directory:
-   ```
-   cd project
-   ```
-
-2. Install dependencies:
-   ```
-   npm ci
-   ```
-
-3. Create a `.env.production` file with the backend URL:
-   ```
-   VITE_API_BASE_URL=http://your-backend-url:3000
-   ```
-
-4. Build the application:
-   ```
-   npm run build
-   ```
-
-5. Serve the built files using a static file server:
-   ```
-   npx serve -s dist
-   ```
-
-### Environment Variables
-
-#### Backend
-
-- `PORT`: The port on which the backend server runs (default: 3000)
-- `NODE_ENV`: Environment mode (development/production)
-- `ENABLE_CLUSTER`: Whether to enable cluster mode (true/false)
-- `RATE_LIMIT_WINDOW_MS`: Rate limiting window in milliseconds
-- `RATE_LIMIT_MAX_REQUESTS`: Maximum requests per window
-- `KEEP_ALIVE_TIMEOUT`: Keep-alive timeout in milliseconds
-- `HEADERS_TIMEOUT`: Headers timeout in milliseconds
-
-#### Frontend
-
-- `VITE_API_BASE_URL`: The URL of the backend API
+- Node.js 16.0.0 or higher
+- Sufficient CPU cores and memory for expected load
+- Network interface capable of handling expected throughput
